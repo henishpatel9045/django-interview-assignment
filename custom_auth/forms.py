@@ -2,6 +2,7 @@ from django import forms
 from .models import Member, Librarian
 from django.db import transaction
 from django.contrib.auth import get_user_model
+from django.db.models import Q
 
 class CustomUserForm(forms.ModelForm):
     first_name = forms.CharField(max_length=50, required=False)
@@ -20,6 +21,11 @@ class CustomUserForm(forms.ModelForm):
             user.save()    
             return super().save(*args, **kwargs)
         
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        User = get_user_model()
+        self.fields['user'].queryset = User.objects.exclude(Q(pk__in=Member.objects.all().values('user')) 
+                                                            | Q(pk__in=Librarian.objects.all().values('user')))
     
 class MemberForm(CustomUserForm):
     class Meta():
