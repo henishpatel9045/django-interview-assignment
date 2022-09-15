@@ -1,10 +1,9 @@
 from django.contrib import admin
 
 from django.db import transaction
-from .models import Librarian, Member
+from .models import Librarian
 from . import models, forms
 from django.contrib.auth import get_user_model
-from django.db.models import Q
 
 User = get_user_model()
 # Register your models here.
