@@ -9,6 +9,8 @@ Pipfile.lock
 # C extensions
 *.so
 
+*/migrations/0*.py
+
 # Distribution / packaging
 .Python
 build/
