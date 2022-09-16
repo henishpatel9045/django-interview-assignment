@@ -1,3 +1,4 @@
+from urllib import request
 from django.contrib import admin
 
 from django.db import transaction
@@ -7,7 +8,9 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 # Register your models here.
-class UserAdmin(admin.ModelAdmin):    
+class UserAdmin(admin.ModelAdmin):   
+    exclude = ['is_new'] 
+
     def get_form(self, req, obj, **kwargs):
         form = super().get_form(req, obj, **kwargs)
         try:
@@ -15,7 +18,8 @@ class UserAdmin(admin.ModelAdmin):
             form.base_fields['last_name'].initial = obj.user.last_name
             form.base_fields['email'].initial = obj.user.email        
             form.base_fields.get('user').widget.attrs['readonly'] = True
-            form.base_fields['user'].queryset = User.objects.filter(pk=obj.user.pk)
+            print(request.user.is_superuser)
+            form.base_fields['user'].queryset = User.objects.exclude(is_superuser=True).filter(pk=obj.user.pk)
             return form
         except Exception as e:
             return form
@@ -23,7 +27,7 @@ class UserAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         res = super().get_queryset(request)
         user = request.user
-        if Librarian.objects.filter(user=user).exists():
+        if Librarian.objects.filter(user=user).exists() or request.user.is_superuser:
             return res
         else:
             return res.filter(user=user)
