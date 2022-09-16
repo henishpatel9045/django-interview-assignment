@@ -6,7 +6,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
-      - run: pip install pipenv flake8
+      - run: pip install pipenv
+      - run: pip install flake8
       - run: pipenv install
       - run: python manage.py makemigrations
       - run: python manage.py migrate
