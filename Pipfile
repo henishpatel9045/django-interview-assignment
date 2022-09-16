@@ -9,6 +9,8 @@ djangorestframework = "*"
 django-debug-toolbar = "*"
 drf-nested-routers = "*"
 drf-yasg = "*"
+djoser = "*"
+djangorestframework-simplejwt = "*"
 
 [dev-packages]
 pytest = "*"
