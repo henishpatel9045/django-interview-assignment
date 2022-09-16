@@ -45,32 +45,46 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ('id', 'username', 'email', 'password', 'first_name', 'last_name')
 
-    username = serializers.CharField()
-    password = serializers.CharField()
-    email = serializers.EmailField()
-    first_name = serializers.CharField()
-    last_name = serializers.CharField()
+    username = serializers.CharField(default="")
+    password = serializers.CharField(default="")
+    email = serializers.EmailField(default="")
+    first_name = serializers.CharField(default="")
+    last_name = serializers.CharField(default="")
+    
+    def update(self, instance, validated_data):
+        user = User.objects.update(username=validated_data.get("username", instance.username), 
+                                   password=validated_data.get("password", instance.password),
+                                   email=validated_data.get("email", instance.email),
+                                   first_name=validated_data.get("first_name", instance.first_name),
+                                   last_name=validated_data.get("last_name", instance.last_name))
+        return user 
     
     def create(self, validated_data):
         validated_data = {'username': validated_data.get('username'), 'email': validated_data.get('email'), 'password': validated_data.get('password'), 'first_name': validated_data.get('first_name'), 'last_name': validated_data.get('last_name')}
         return User.objects.create_user(**validated_data)
 
 
-class MemberSerializer(UserSerializer):
+class MemberSerializer(serializers.ModelSerializer):
     class Meta:
         model = Member
-        fields = ('id', 'user', 'password', 'first_name', 'last_name', 'email', 'phone_number', 'address', 'pin_code', 'aadhaar_card_id', 'date_of_birth')
+        fields = ('id', 'user', 'phone_number', 'address', 'pin_code', 'aadhaar_card_id', 'date_of_birth')
+    
+    def run_validation(self, data):
+        librarian = Librarian.objects.filter(user=self.context.user)
+        if not librarian.exists():
+            self.get_fields().get("user").queryset = User.objects.filter(pk=self.context.user.pk)
+        return super().run_validation(data)
     
     def create(self, validated_data):
         validated_data['user'] = User.objects.get(pk=validated_data.get('user'))
         validated_data = {key: validated_data.get(key) for key in ['user', 'phone_number', 'address', 'pin_code', 'aadhaar_card_id', 'date_of_birth']}
         return Member.objects.create(**validated_data)
         
-class LibrarianSerializer(UserSerializer):
+class LibrarianSerializer(serializers.ModelSerializer):
     class Meta:
         model = Librarian
-        fields = ('id', 'user', 'password', 'first_name', 'last_name', 'email', 'phone_number', 'address', 'pin_code')
-        
+        fields = ('id', 'user', 'phone_number', 'address', 'pin_code')
+    
     def create(self, validated_data):
         validated_data['user'] = User.objects.get(pk=validated_data.get("user"))
         validated_data = {key: validated_data.get(key) for key in ['user', 'phone_number', 'address', 'pin_code']} 
