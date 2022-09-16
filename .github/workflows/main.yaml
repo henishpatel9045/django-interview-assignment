@@ -6,9 +6,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v2
-      - run: pip install pipenv
       - run: pip install flake8
-      - run: pipenv install
+      - run: pip install pytest
+      - run: pip install pytest_django
+      - run: pip install django
+      - run: pip install djangorestframework
       - run: python manage.py makemigrations
       - run: python manage.py migrate
       - run: pytest . 
