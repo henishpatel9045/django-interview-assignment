@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.db import transaction
 from .models import Librarian
 from . import models, forms
+
 from django.contrib.auth import get_user_model, models as auth_models
 
 User = get_user_model()
@@ -30,6 +31,7 @@ class UserAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         res = super().get_queryset(request)
         user = request.user
+
         if Librarian.objects.filter(user=user).exists() or request.user.is_superuser:
             return res
         else:
@@ -60,5 +62,6 @@ class LibrarianAdmin(UserAdmin):
                 .filter(user=request.user) 
                 if not request.user.is_superuser
                 else super().get_queryset(request))
+
     
     
