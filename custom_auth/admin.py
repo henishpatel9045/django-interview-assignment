@@ -4,9 +4,12 @@ from django.contrib import admin
 from django.db import transaction
 from .models import Librarian
 from . import models, forms
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, models as auth_models
 
 User = get_user_model()
+admin.site.site_header = "Library Management System"
+admin.site.index_title = "Dashboard"
+
 # Register your models here.
 class UserAdmin(admin.ModelAdmin):   
     exclude = ['is_new'] 
@@ -45,10 +48,6 @@ class UserAdmin(admin.ModelAdmin):
 class MemberAdmin(UserAdmin):
     list_display = ['id']
     form = forms.MemberForm
-    
-    def get_readonly_fields(self, request,obj=None):
-        res = ['phone_number', 'aadhaar_card_id', 'date_of_birth', 'address', 'pin_code', 'currently_borrowed_books_count', 'pending_charge']
-        return res      
 
 @admin.register(models.Librarian)
 class LibrarianAdmin(UserAdmin):
@@ -56,6 +55,10 @@ class LibrarianAdmin(UserAdmin):
     form = forms.LibrarianForm
     
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(user=request.user)
+        return (super()
+                .get_queryset(request)
+                .filter(user=request.user) 
+                if not request.user.is_superuser
+                else super().get_queryset(request))
     
     

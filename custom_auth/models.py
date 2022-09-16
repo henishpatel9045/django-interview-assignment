@@ -10,7 +10,8 @@ FORBIDDEN_PERMISSIONS = Permission.objects.exclude(models.Q(codename__iendswith=
                                                              | models.Q(codename__istartswith='contenttype')
                                                              | models.Q(codename__istartswith='logentry')
                                                              | models.Q(codename__istartswith='group')
-                                                             | models.Q(codename__istartswith='session'))
+                                                             | models.Q(codename__istartswith='session')
+                                                             | models.Q(codename__iendswith='group'))
 
 MEMBER_ALLOWED = [
     'add_returnapproval',
@@ -19,6 +20,8 @@ MEMBER_ALLOWED = [
     'delete_member',
     'add_borrow',
     'view_borrow',
+    'add_user',
+    'change_user'
 ]
 
 class Librarian(models.Model):
@@ -41,6 +44,11 @@ class Librarian(models.Model):
                 self.user.save()
                 self.is_new = False    
             return super().save(*args, **kwargs)
+    
+    def delete(self, *args, **kwargs):
+        with transaction.atomic():
+            User.objects.get(pk=self.user.pk).delete()
+            return super().delete(*args, **kwargs)
     
     class Meta:
         verbose_name = "Librarian"
