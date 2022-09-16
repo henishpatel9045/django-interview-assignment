@@ -14,10 +14,10 @@ class SignUpViewSet(mixins.CreateModelMixin,
     # def create(self, request, *args, **kwargs)
     
     def create(self, request, *args, **kwargs):
-        try:
+        # try:
             return super().create(request, *args, **kwargs)
-        except Exception as e:
-            return Response({"detail": e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
+        # except Exception as e:
+        #     return Response({"detail": e.args[0]}, status=status.HTTP_400_BAD_REQUEST)
     
 
 class LibrarienViewSet(mixins.RetrieveModelMixin, 

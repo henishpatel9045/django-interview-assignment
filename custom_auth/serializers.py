@@ -44,12 +44,6 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'password', 'first_name', 'last_name')
-
-    username = serializers.CharField(default="")
-    password = serializers.CharField(default="")
-    email = serializers.EmailField(default="")
-    first_name = serializers.CharField(default="")
-    last_name = serializers.CharField(default="")
     
     def update(self, instance, validated_data):
         user = User.objects.update(username=validated_data.get("username", instance.username), 
@@ -70,9 +64,12 @@ class MemberSerializer(serializers.ModelSerializer):
         fields = ('id', 'user', 'phone_number', 'address', 'pin_code', 'aadhaar_card_id', 'date_of_birth')
     
     def run_validation(self, data):
-        librarian = Librarian.objects.filter(user=self.context.user)
-        if not librarian.exists():
-            self.get_fields().get("user").queryset = User.objects.filter(pk=self.context.user.pk)
+        try:
+            librarian = Librarian.objects.filter(user=self.context.user)
+            if not librarian.exists():
+                self.get_fields().get("user").queryset = User.objects.filter(pk=self.context.user.pk)
+        except AttributeError as e:
+            pass
         return super().run_validation(data)
     
     def create(self, validated_data):
