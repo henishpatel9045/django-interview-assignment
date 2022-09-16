@@ -12,5 +12,3 @@ class SignUpViewSet(mixins.CreateModelMixin, mixins.UpdateModelMixin, mixins.Des
     queryset = User.objects.all()
     # def create(self, request, *args, **kwargs)
         
-    def update(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)

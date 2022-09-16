@@ -12,18 +12,16 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
-        if Librarian.objects.filter(user=self.user).exists():
+        if Librarian.objects.filter(user=self.request.user).exists():
             return super().create(request, *args, **kwargs)
         return Response({"detail": "Only librarian allowed to add new category."}, status=status.HTTP_401_UNAUTHORIZED)
 
     def destroy(self, request, *args, **kwargs):
-        if Librarian.objects.filter(user=self.user).exists():
+        if Librarian.objects.filter(user=self.request.user).exists():
             return super().destroy(request, *args, **kwargs)
         return Response({"detail": "Only librarian allowed to delete category."}, status=status.HTTP_401_UNAUTHORIZED)
     
     def update(self, request, *args, **kwargs):
-        if Librarian.objects.filter(user=self.user).exists():
+        if Librarian.objects.filter(user=self.request.user).exists():
             return super().update(request, *args, **kwargs)
         return Response({"detail": "Only librarian allowed to add new category."}, status=status.HTTP_401_UNAUTHORIZED)
-    
-    

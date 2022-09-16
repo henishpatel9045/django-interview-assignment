@@ -17,6 +17,7 @@ class TestCreation:
             "confirm_password": "1234567890",
             "first_name": "Henish",
             "last_name": "Patel",
+            "email": "ompatle@gml.com",
             "sign_up_as": "Librarian",
             "phone_number": "7990577979",
             "address": "Vadnagar",
