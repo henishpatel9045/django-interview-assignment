@@ -1,15 +1,16 @@
-from rest_framework.routers import DefaultRouter
-from .views import SignUpViewSet, LoginViewSet
+from rest_framework_nested.routers import DefaultRouter
+from .views import SignUpViewSet, LibrarienViewSet
 from rest_framework_simplejwt import views
 from django.urls import path
 
 router = DefaultRouter()
 router.register("register", SignUpViewSet, basename="register")
+router.register("librarien", LibrarienViewSet, basename="Endpoint for librarien.")
 
 urlpatterns = [
-    path("login", views.TokenObtainPairView.as_view(), name="jwt-create"),
-    path("refresh", views.TokenRefreshView.as_view(), name="jwt-refresh"),
-    path("authenticate", views.TokenVerifyView.as_view(), name="jwt-verify"),
+    path("login", views.TokenObtainPairView.as_view(), name="Generate JWT access token using username and password."),
+    path("refresh", views.TokenRefreshView.as_view(), name="Generate JWT access token using refresh token."),
+    path("authenticate", views.TokenVerifyView.as_view(), name="Verigy your access token."),
 ]
 
 urlpatterns += router.urls

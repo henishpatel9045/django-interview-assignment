@@ -47,13 +47,10 @@ class Borrow(models.Model):
     late_charges = models.DecimalField(max_digits=8, decimal_places=2, default=0.0)
     
     def save(self, *args, **kwargs):
-        if not self.book.available:
-            raise ValidationError("Selected book is not available.")
-        else:
-            with transaction.atomic():
-                self.book.available = False
-                self.book.available.save()
-                return super().save(*args, **kwargs)
+        if self.returned:
+            count = self.borrower.currently_borrowed_books_count
+            self.borrower.currently_borrowed_books_count = count - 1
+            self.borrower.save()
     
     def __str__(self):
         return f"{self.book.title} - {self.borrower.full_name()}"

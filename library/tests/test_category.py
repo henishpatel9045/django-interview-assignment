@@ -49,15 +49,15 @@ class TestCategory:
             **self.member_body
         }
         res1 = client.post("/auth/register/", member)
-        print(res1.data)
         auth = {
             'username': member.get("username"),
             "password": member.get("password")
         }
-        jwt = client.post("/jwt/create/", auth)
-        print(jwt.data)
-        headers = {
-            'Authorization': f'JWT '+str(jwt.data.get("access"))
-        }
-        res = client.post("/category/", self.body, )
+        jwt = client.post("/auth/login", auth)
+        client.credentials(HTTP_AUTHORIZATION='JWT ' + jwt.data.get("access"))
+        res = client.post("/category/", self.body)
         assert res.status_code == status.HTTP_401_UNAUTHORIZED
+        res = client.post("/book/", {})
+        assert res.status_code == status.HTTP_401_UNAUTHORIZED
+        
+        

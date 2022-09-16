@@ -1,6 +1,6 @@
 from django.db import models, transaction
 from django.contrib.auth import get_user_model, models as auth_models
-
+from django.core.validators import MaxValueValidator
 
 # Create your models here.
 User = get_user_model()
@@ -63,7 +63,7 @@ class Member(models.Model):
     date_of_birth = models.DateField()
     address = models.TextField()
     pin_code = models.CharField(max_length=10)
-    currently_borrowed_books_count = models.IntegerField(default=0)
+    currently_borrowed_books_count = models.IntegerField(default=0, validators=[MaxValueValidator(5, "A user can only issue at most 5 books simultaneously.")])
     pending_charge = models.DecimalField(max_digits=8, decimal_places=2, default=0.0)        
     is_new = models.BooleanField(default=True)
     

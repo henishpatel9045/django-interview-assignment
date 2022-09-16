@@ -29,7 +29,6 @@ class SignUpSerializer(serializers.Serializer):
         with transaction.atomic():
             user = UserSerializer(data=validated_data)
             user.is_valid(raise_exception=True)
-
             validated_data['user'] = user.create(validated_data).pk
             if choice == 'Member':
                 member = MemberSerializer(data=validated_data)
@@ -40,30 +39,37 @@ class SignUpSerializer(serializers.Serializer):
                 librarien.is_valid(raise_exception=True)
                 validated_data['id'] = librarien.create(validated_data).user.pk
             return validated_data
-
+    
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'password', 'first_name', 'last_name')
 
+    username = serializers.CharField()
+    password = serializers.CharField()
+    email = serializers.EmailField()
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    
     def create(self, validated_data):
         validated_data = {'username': validated_data.get('username'), 'email': validated_data.get('email'), 'password': validated_data.get('password'), 'first_name': validated_data.get('first_name'), 'last_name': validated_data.get('last_name')}
         return User.objects.create_user(**validated_data)
 
-class MemberSerializer(serializers.ModelSerializer):
+
+class MemberSerializer(UserSerializer):
     class Meta:
         model = Member
-        fields = ('id', 'user', 'phone_number', 'address', 'pin_code', 'aadhaar_card_id', 'date_of_birth')
+        fields = ('id', 'user', 'password', 'first_name', 'last_name', 'email', 'phone_number', 'address', 'pin_code', 'aadhaar_card_id', 'date_of_birth')
     
     def create(self, validated_data):
         validated_data['user'] = User.objects.get(pk=validated_data.get('user'))
         validated_data = {key: validated_data.get(key) for key in ['user', 'phone_number', 'address', 'pin_code', 'aadhaar_card_id', 'date_of_birth']}
         return Member.objects.create(**validated_data)
         
-class LibrarianSerializer(serializers.ModelSerializer):
+class LibrarianSerializer(UserSerializer):
     class Meta:
         model = Librarian
-        fields = ('id', 'user', 'phone_number', 'address', 'pin_code')
+        fields = ('id', 'user', 'password', 'first_name', 'last_name', 'email', 'phone_number', 'address', 'pin_code')
         
     def create(self, validated_data):
         validated_data['user'] = User.objects.get(pk=validated_data.get("user"))
