@@ -127,26 +127,30 @@ class TestLibrarien:
         assert res.status_code == status.HTTP_401_UNAUTHORIZED
 
     def test_librarien_with_member_cred_returns_401(self):
+        client = APIClient()
         req_body = {
             "username": rand_username(),
             **member_body
         }
-        self.client.post("/auth/register/", req_body)
-        access = self.client.post("/auth/login", {'username': req_body['username'], 'password': req_body['password']})
+        client.post("/auth/register/", req_body)
+        access = client.post("/auth/login", {'username': req_body['username'], 'password': req_body['password']})
         access = access.data['access']
-        self.client.credentials(HTTP_AUTHORIZATION='JWT ' + access)
-        res = self.client.get("/auth/librarien/")
+        client.credentials(HTTP_AUTHORIZATION='JWT ' + access)
+        res = client.get("/auth/librarien/")
         assert res.status_code == status.HTTP_401_UNAUTHORIZED
     
     def test_librarien_with_librarien_cred_returns_200(self):
+        client = APIClient()
         req_body = {
             "username": rand_username(),
             **librarian_body
         }
-        self.client.post("/auth/register/", req_body)
-        access = self.client.post("/auth/login", {'username': req_body['username'], 'password': req_body['password']})
-        access = access.data['access']
-        self.client.credentials(HTTP_AUTHORIZATION='JWT ' + access)
-        res = self.client.get("/auth/librarien/")
+        print(req_body)
+        client.post("/auth/register/", req_body)
+        access = client.post("/auth/login", {'username': req_body['username'], 'password': req_body['password']})
+        access = access.data.get('access')
+        client.credentials(HTTP_AUTHORIZATION='JWT ' + access)
+        res = client.get("/auth/librarien/")
         assert res.status_code == status.HTTP_200_OK
-        
+        assert len(res.data) == 1
+                

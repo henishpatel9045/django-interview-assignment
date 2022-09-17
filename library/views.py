@@ -56,6 +56,12 @@ class BorrowViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
             return Response({"detail": e.args[0]}, status.HTTP_400_BAD_REQUEST)
     
 
+class BorrowByUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    serializer_class = BorrowSerializer
+    def get_queryset(self):
+        return Borrow.objects.filter(borrower__user=self.request.user)
+    
+
 def calculate_fine(issue_date, fine_per_day, day_limit):
     today = date.today() - issue_date.date()
     return max(fine_per_day * (day_limit-today.days), 0)

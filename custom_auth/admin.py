@@ -5,7 +5,8 @@ from django.db import transaction
 from .models import Librarian
 from . import models, forms
 
-from django.contrib.auth import get_user_model, models as auth_models
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth import get_user_model
 
 from library.utils import (
     has_full_access,
@@ -14,10 +15,15 @@ from library.utils import (
 User = get_user_model()
 admin.site.site_header = "Library Management System"
 admin.site.index_title = "Dashboard"
-
+admin.site.unregister(User)
 
 @admin.register(User)
-class DjangoUserAdmin(admin.ModelAdmin):
+class DjangoUserAdmin(BaseUserAdmin):
+    fieldsets = (
+        (None, {"fields": ("username", "password")}),
+        (("Personal info"), {"fields": ("first_name", "last_name", "email")}),
+    )
+    
     def get_queryset(self, request):
         if has_full_access(request.user):
             return super().get_queryset(request)

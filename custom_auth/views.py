@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from .serializers import *
 from .models import *
 from library.utils import has_full_access, is_librarian
+from django.contrib.auth import get_user_model
 
 # Create your views here.
 
@@ -62,4 +63,29 @@ class MemberViewSet(mixins.RetrieveModelMixin,
         return super().get_queryset().filter(user=self.request.user)
             
     
+class MeViewSet(viewsets.ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        librarien = is_librarian(self.request.user)
+        if librarien and not self.request.user.is_superuser:
+            return Librarian.objects.filter(user=self.request.user)
+        elif not librarien:
+            print(self.request.user)
+            qs = Member.objects.filter(user__pk=self.request.user.pk)
+            print(qs)
+            return qs
+        return get_user_model().objects.filter(id=self.request.user.id)
     
+    def get_serializer_class(self):
+        librarien = is_librarian(self.request.user)
+        if librarien and not self.request.user.is_superuser:
+            return LibrarianSerializer
+        elif not librarien:
+            return MemberSerializer
+        return UserSerializer
+    
+    def list(self, request, *args, **kwargs):
+        print(self.get_queryset())
+        print(self.get_serializer())
+        return super().list(request, *args, **kwargs)
