@@ -5,6 +5,7 @@ from .models import *
 from .serializers import *
 from custom_auth.models import Librarian
 from drf_yasg.utils import swagger_auto_schema
+from .utils import has_full_access, is_librarian
 
 # Create your views here.
 
@@ -12,17 +13,17 @@ class LibrarianPermissionViewSet(viewsets.ModelViewSet):
     record = None
     
     def create(self, request, *args, **kwargs):
-        if Librarian.objects.filter(user=self.request.user).exists():
+        if has_full_access(request.user):
             return super().create(request, *args, **kwargs)
         return Response({"detail": f"Only librarian allowed to add new {self.record}."}, status=status.HTTP_401_UNAUTHORIZED)
 
     def destroy(self, request, *args, **kwargs):
-        if Librarian.objects.filter(user=self.request.user).exists():
+        if has_full_access(request.user):
             return super().destroy(request, *args, **kwargs)
         return Response({"detail": f"Only librarian allowed to delete {self.record}."}, status=status.HTTP_401_UNAUTHORIZED)
     
     def update(self, request, *args, **kwargs):
-        if Librarian.objects.filter(user=self.request.user).exists():
+        if has_full_access(request.user):
             return super().update(request, *args, **kwargs)
         return Response({"detail": f"Only librarian allowed to update {self.record}."}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -65,8 +66,7 @@ class ReturnApprovalViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         res = ReturnApproval.objects.prefetch_related("borrow").all()
-        librarien = Librarian.objects.filter(user=self.request.user)
-        if not librarien.exists():
+        if not is_librarian(self.request.user):
             return res.filter(res.filter(borrow__borrower__user=self.request.user))
         return res
     

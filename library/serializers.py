@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import *
 from custom_auth import models
+from .utils import has_full_access, is_librarian
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -29,8 +30,7 @@ class BorrowSerializer(serializers.ModelSerializer):
                 book.save()        
                 user = self.context.user
                 print(user)
-                librarian = models.Librarian.objects.filter(user=user)
-                if not librarian.exists():
+                if not is_librarian(user):
                     validated_data['borrower'] = models.Member.objects.get(user=self.context.get('request').user)
                 user = models.Member.objects.get(pk=validated_data['borrower'])
                 count = user.currently_borrowed_books_count

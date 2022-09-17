@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import *
+from library.utils import has_full_access, is_librarian
 
 class SignUpSerializer(serializers.Serializer):
     id = serializers.ReadOnlyField(default=None)
@@ -65,8 +66,7 @@ class MemberSerializer(serializers.ModelSerializer):
     
     def run_validation(self, data):
         try:
-            librarian = Librarian.objects.filter(user=self.context.user)
-            if not librarian.exists():
+            if not is_librarian(self.context.user):
                 self.get_fields().get("user").queryset = User.objects.filter(pk=self.context.user.pk)
         except AttributeError as e:
             pass

@@ -18,6 +18,7 @@ MEMBER_ALLOWED = [
     'delete_returnapproval',
     'view_member',
     'delete_member',
+    'change_member',
     'add_borrow',
     'view_borrow',
     'add_user',
