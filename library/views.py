@@ -4,9 +4,11 @@ from rest_framework import viewsets, mixins, status, permissions
 from rest_framework.response import Response
 from .models import *
 from .serializers import *
-from custom_auth.models import Librarian
-from drf_yasg.utils import swagger_auto_schema
 from .utils import has_full_access, is_librarian
+import os
+
+LATE_FINE_PER_DAY = os.environ.get("LATE_FINE_PER_DAY", 2)
+
 
 # Create your views here.
 
@@ -33,29 +35,14 @@ class CategoryViewSet(LibrarianPermissionViewSet, viewsets.ModelViewSet):
     queryset = Category.objects.all()
     permission_classes = [permissions.IsAuthenticated]
     record = "category"
-
+    
 
 class BookViewSet(LibrarianPermissionViewSet, viewsets.ModelViewSet):
     serializer_class = BookSerializer
     queryset = Book.objects.prefetch_related("category").all()
     permission_classes = [permissions.IsAuthenticated]
     record = "book"
-    
 
-class BorrowViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
-    serializer_class = BorrowSerializer
-    queryset = Borrow.objects.prefetch_related("book").prefetch_related("borrower").all()
-    permission_classes = [permissions.IsAuthenticated]
-    
-    def get_serializer_context(self):
-        return self.request
-
-class BookViewSet(LibrarianPermissionViewSet, viewsets.ModelViewSet):
-    serializer_class = BookSerializer
-    queryset = Book.objects.prefetch_related("category").all()
-    permission_classes = [permissions.IsAuthenticated]
-    record = "book"
-    
 
 class BorrowViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     serializer_class = BorrowSerializer
@@ -78,9 +65,9 @@ class BorrowByUserViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, view
         return Borrow.objects.filter(borrower__user=self.request.user)
     
 
-def calculate_fine(issue_date, fine_per_day, day_limit):
+def calculate_fine(issue_date, day_limit):
     today = date.today() - issue_date.date()
-    return max(fine_per_day * (day_limit-today.days), 0)
+    return max(LATE_FINE_PER_DAY * (day_limit-today.days), 0)
 
 class ReturnApprovalViewSet(viewsets.ModelViewSet):
     serializer_class = ReturnApprovalSerializer
@@ -93,22 +80,24 @@ class ReturnApprovalViewSet(viewsets.ModelViewSet):
         return res
     
     def update(self, request, *args, **kwargs):
-        return_obj = ReturnApproval.objects.get(pk=kwargs['pk'])
-        with transaction.atomic():
-            if return_obj.approved:
-                return_obj.approved_by = self.request.user
-                charge = calculate_fine(return_obj.borrow.issue_date, 2,
-                                        return_obj.borrow.book.category.issue_period)
-                return_obj.borrow.return_date = timezone.now().today()
-                return_obj.borrow.returned = True
-                return_obj.borrow.book.available = True
-                return_obj.borrow.late_charges = charge
-                pending_charge = return_obj.borrow.borrower.pending_charge
-                return_obj.borrow.borrower.pending_charge = pending_charge + charge
-                return_obj.borrow.borrower.save()
-                return_obj.borrow.book.save()
-                return_obj.borrow.save()
-                return_obj.save()
-            return super().update(request, *args, **kwargs)
-            
+        try:
+            return_obj = ReturnApproval.objects.get(pk=kwargs['pk'])
+            with transaction.atomic():
+                if return_obj.approved:
+                    return_obj.approved_by = self.request.user
+                    charge = calculate_fine(return_obj.borrow.issue_date,
+                                            return_obj.borrow.book.category.issue_period)
+                    return_obj.borrow.return_date = timezone.now().today()
+                    return_obj.borrow.returned = True
+                    return_obj.borrow.book.available = True
+                    return_obj.borrow.late_charges = charge
+                    pending_charge = return_obj.borrow.borrower.pending_charge
+                    return_obj.borrow.borrower.pending_charge = pending_charge + charge
+                    return_obj.borrow.borrower.save()
+                    return_obj.borrow.book.save()
+                    return_obj.borrow.save()
+                    return_obj.save()
+                return super().update(request, *args, **kwargs)
+        except Exception as e:
+            return Response({"detail": e.args[0]}, status.HTTP_400_BAD_REQUEST) 
             

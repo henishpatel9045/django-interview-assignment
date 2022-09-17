@@ -12,6 +12,8 @@ drf-yasg = "*"
 djoser = "*"
 djangorestframework-simplejwt = "*"
 psycopg2 = "*"
+gunicorn = "*"
+whitenoise = "*"
 
 [dev-packages]
 pytest = "*"

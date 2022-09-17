@@ -45,12 +45,15 @@ class Borrow(models.Model):
     return_date = models.DateField(null=True, blank=True)
     returned = models.BooleanField(default=False)    
     late_charges = models.DecimalField(max_digits=8, decimal_places=2, default=0.0)
+    is_new = models.BooleanField(default=True)
     
     def save(self, *args, **kwargs):
-        if self.returned:
+        if self.returned and self.is_new:
             count = self.borrower.currently_borrowed_books_count
             self.borrower.currently_borrowed_books_count = count - 1
+            self.is_new = False
             self.borrower.save()
+        return super().save(*args, **kwargs)
     
     def __str__(self):
         return f"{self.book.title} - {self.borrower.full_name()}"

@@ -43,10 +43,3 @@ class ReturnApprovalSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReturnApproval
         fields = "__all__"
-        
-    def save(self, **kwargs):
-        return super().save(**kwargs)
-        
-    def save(self, **kwargs):
-        return super().save(**kwargs)
-        

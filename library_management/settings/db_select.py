@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-USE_POSTGRES = True
+USE_POSTGRES = False
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 print(BASE_DIR)
