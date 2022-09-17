@@ -11,6 +11,7 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'library_management.settings')
+prod = os.environ.get('PROD', False)
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', ('library_management.settings.prod' if prod else 'library_management.settings.dev'))
 
 application = get_asgi_application()

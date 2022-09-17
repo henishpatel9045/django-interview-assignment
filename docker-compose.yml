@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    volumes:
+      - .:/library_management
+    ports:
+      - 8000:8000
+
+    image: app:library
+    container_name: library_api
+    command: python manage.py runserver 0.0.0.0:8000
+    environment:
+      - DB_NAME=library
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin0000
+      - LATE_FINE_PER_DAY=5
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+    depends_on:
+      - db
+
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin0000
+      POSTGRES_DB: library
+
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+
+
