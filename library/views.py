@@ -1,4 +1,5 @@
 from datetime import date
+from datetime import date
 from rest_framework import viewsets, mixins, status, permissions
 from rest_framework.response import Response
 from .models import *
@@ -32,6 +33,23 @@ class CategoryViewSet(LibrarianPermissionViewSet, viewsets.ModelViewSet):
     queryset = Category.objects.all()
     permission_classes = [permissions.IsAuthenticated]
     record = "category"
+
+
+class BookViewSet(LibrarianPermissionViewSet, viewsets.ModelViewSet):
+    serializer_class = BookSerializer
+    queryset = Book.objects.prefetch_related("category").all()
+    permission_classes = [permissions.IsAuthenticated]
+    record = "book"
+    
+
+class BorrowViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    serializer_class = BorrowSerializer
+    queryset = Borrow.objects.prefetch_related("book").prefetch_related("borrower").all()
+    permission_classes = [permissions.IsAuthenticated]
+    
+    def get_serializer_context(self):
+        return self.request
+           record = "category"
 
 
 class BookViewSet(LibrarianPermissionViewSet, viewsets.ModelViewSet):
